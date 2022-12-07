@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import prepState
+import prep_state
 from numpy import linalg as LA
 from qutip import *
 

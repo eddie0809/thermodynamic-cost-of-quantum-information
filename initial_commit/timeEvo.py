@@ -2,19 +2,19 @@
 import numpy as np
 from scipy import linalg as la
 from qutip import *
-import prepState
+import prep_state
 
 def generateStates(N, interaction):
     myStates = {}
     myBasis = {}
     for i in range(N+1):
-        myStates["sigmaX", i] = prepState.stateX(N,i)
-        myStates["sigmaY", i] = prepState.stateY(N,i)
-        myStates["sigmaZ", i] = prepState.stateZ(N,i)
+        myStates["sigmaX", i] = prep_state.stateX(N,i)
+        myStates["sigmaY", i] = prep_state.stateY(N,i)
+        myStates["sigmaZ", i] = prep_state.stateZ(N,i)
         myStates["sigmaP", i] = .5*(myStates["sigmaX", i]+1.j*myStates["sigmaY", i])
         myStates["sigmaM", i] = .5*(myStates["sigmaX", i]-1.j*myStates["sigmaY", i])
-        myBasis["zero",i] = prepState.state0(N,i)
-        myBasis["one",i] = prepState.state1(N,i)
+        myBasis["zero",i] = prep_state.state0(N,i)
+        myBasis["one",i] = prep_state.state1(N,i)
 
     #my_one = tensor(qeye(2),qeye(2),qeye(2),qeye(2),qeye(2))
     if interaction=="hom": #homogenous interaction strength. 

@@ -1,4 +1,3 @@
-### this file is just so that this massive block of just defining functions is not in the main file
 from scipy import *
 import numpy as np
 from qutip import *

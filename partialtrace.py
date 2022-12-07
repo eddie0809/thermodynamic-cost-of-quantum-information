@@ -1,5 +1,5 @@
 from numpy import matmul
-import prepState
+import prep_state
 
 
 ###
@@ -21,8 +21,8 @@ class PartialTrace:
     def __init__(self, n) -> None:
         self.__N = n
         for i in range(n+1):
-            self.__basis['0',i] = prepState.vector0(self.__N,i)
-            self.__basis['1',i] = prepState.vector1(self.__N,i)
+            self.__basis['0',i] = prep_state.vector0(self.__N,i)
+            self.__basis['1',i] = prep_state.vector1(self.__N,i)
 
     def __bin_set(self):
         # to improve readability

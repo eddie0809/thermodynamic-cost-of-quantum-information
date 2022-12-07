@@ -1,5 +1,5 @@
-from generateStates import *
-from timeEvo import *
+from generate_states import *
+from time_evo import *
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl

@@ -1,20 +1,22 @@
 ### this file is just that the main file isnt filled with 2 line functions.
 import numpy as np
-from scipy import linalg as la
 from qutip import *
-import prepState
+from scipy import linalg as la
 
-def generateStates(N, interaction):
+import prep_state
+
+
+def generate_states(N, interaction):
     myStates = {}
     myBasis = {}
     for i in range(N+1):
-        myStates["sigmaX", i] = prepState.stateX(N,i)
-        myStates["sigmaY", i] = prepState.stateY(N,i)
-        myStates["sigmaZ", i] = prepState.stateZ(N,i)
+        myStates["sigmaX", i] = prep_state.stateX(N,i)
+        myStates["sigmaY", i] = prep_state.stateY(N,i)
+        myStates["sigmaZ", i] = prep_state.stateZ(N,i)
         myStates["sigmaP", i] = .5*(myStates["sigmaX", i]+1.j*myStates["sigmaY", i])
         myStates["sigmaM", i] = .5*(myStates["sigmaX", i]-1.j*myStates["sigmaY", i])
-        myBasis["zero",i] = prepState.state0(N,i)
-        myBasis["one",i] = prepState.state1(N,i)
+        myBasis["zero",i] = prep_state.state0(N,i)
+        myBasis["one",i] = prep_state.state1(N,i)
 
     #my_one = tensor(qeye(2),qeye(2),qeye(2),qeye(2),qeye(2))
     if interaction=="hom": #homogenous interaction strength. 
@@ -97,3 +99,47 @@ def stateTransfer(dt, Hint, first, last):
 def deriv(dt, f):
 	fdot = [(f[i+1]-f[i])/(dt) for i in range(len(f)-1)]
 	return fdot
+
+
+def integrate(N, psi0, tlist, solver, interaction):
+
+    si = qeye(2)
+    sx = sigmax()
+    sy = sigmay()
+    sz = sigmaz()
+
+    sx_list = []
+    sy_list = []
+    sz_list = []
+
+    for n in range(N+1):
+        op_list = [si for m in range(N+1)]
+
+        op_list[n] = sx
+        sx_list.append(tensor(op_list))
+
+        op_list[n] = sy
+        sy_list.append(tensor(op_list))
+
+        op_list[n] = sz
+        sz_list.append(tensor(op_list))
+
+    # construct the hamiltonian
+    H = generate_states(N, interaction)
+
+    # energy splitting terms
+
+    # interaction terms
+    
+
+    # collapse operators
+    c_op_list = []
+
+
+    # evolve and calculate expectation values
+    if solver == "me":
+        result = mesolve(H, psi0, tlist, c_op_list, sz_list)
+    elif solver == "mc":
+        ntraj = 250 
+        result = mcsolve(H, psi0, tlist, c_op_list, sz_list, ntraj)
+    return result.expect

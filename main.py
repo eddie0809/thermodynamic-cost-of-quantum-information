@@ -3,95 +3,101 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from numpy import linalg as LA
-import prepState
-from timeEvo import *
-import myPlots
-from generateStates import *
+import prep_state
+from time_evo import *
+import my_plots
+from generate_states import *
 from qutip import *
 import partialtrace
 
 # for using tex formatting and font in plots
 
-#plt.rcParams.update({"text.usetex": True,}) 
-#mpl.rcParams['text.latex.preamble'] = [r'\usepackage[utf8]{inputenc}\usepackage[T1]{fontenc}\usepackage{lmodern}\inputencoding{utf8}\usepackage{amsmath}\usepackage{amssymb}\usepackage{dsfont}\usepackage{mathtools}\usepackage{physics}']
-#mpl.rcParams['font.family'] = ['serif']
+plt.rcParams.update({"text.usetex": True,}) 
+plt.rcParams['text.latex.preamble'] = r'\usepackage[utf8]{inputenc}\usepackage[T1]{fontenc}\usepackage{lmodern}\inputencoding{utf8}\usepackage{amsmath}\usepackage{amssymb}\usepackage{dsfont}\usepackage{mathtools}\usepackage{physics}'
+mpl.rcParams['font.family'] = ['serif']
 
+cmap = mpl.cm.get_cmap('viridis')
 
-def initSystem(alpha, firstState, secondState, N):
+def init_system(alpha, first_state, second_state, N):
 	astar = -alpha
-	rhoSystem = tensor(firstState, secondState)+ alpha * tensor(Qobj([[0,1],[0,0]]), Qobj([[0,0],[1,0]])) + astar * tensor(Qobj([[0,0],[1,0]]), Qobj([[0,1],[0,0]]))
+	rho_system = tensor(first_state, second_state)+ alpha * tensor(Qobj([[0,1],[0,0]]), Qobj([[0,0],[1,0]])) + astar * tensor(Qobj([[0,0],[1,0]]), Qobj([[0,1],[0,0]]))
 	for i in range(1,N):
-		rhoSystem = tensor(rhoSystem, Qobj([[0,0],[0,1]]))
-	return rhoSystem
+		rho_system = tensor(rho_system, Qobj([[0,0],[0,1]]))
+	return rho_system
 
-beta = 1
+
+def system_arbitrary_pos_of_corr(alpha, first_state, prod_state, pos, N):
+	if pos == 1:
+		return init_system(alpha, prod_state.ptrace(0),prod_state.ptrace(1), N)
+	qubit_states = []
+	i = 1
+	astar = -alpha
+	corr_state = prod_state + alpha * tensor(Qobj([[0,1],[0,0]]), Qobj([[0,0],[1,0]])) + astar * tensor(Qobj([[0,0],[1,0]]), Qobj([[0,1],[0,0]]))
+	rho_system = first_state
+	while i < pos-1:
+		qubit_states.append(Qobj([[0,0],[0,1]]))
+		i+=1
+	qubit_states.append(corr_state)
+	i+=2
+	while i<=N:
+		qubit_states.append(Qobj([[0,0],[0,1]]))
+		i+=1
+	for qubit, rho in enumerate(qubit_states):
+		rho_system = tensor(rho_system, rho)
+	return rho_system
+
+
+t_stop = np.pi
+dt=1e-3
+t = np.arange(0,t_stop,dt)
+
+beta = 1/300
 rho = (-beta * sigmaz()).expm()
 Z = rho.tr()
 rho = rho/Z
 
-
+N = 5
+pos=2
 alpha = 1.j * .25 * 1/(np.cosh(beta))**2
 
-firstState = rho
+Hint = generate_hamiltonian(N)
 
-rhoSystem = initSystem(alpha, firstState, rho, N)
-rhoSystempoint5 = initSystem(.5*alpha, firstState, rho, N)
-rhoSystempoint1 = initSystem(.1*alpha, firstState, rho, N)
-rhoSystemzero = initSystem(.0*alpha, firstState, rho, N)
+first_state = Qobj([[1,0],[0,0]])
+prod_state = tensor(rho, rho)
+rho_system_test = system_arbitrary_pos_of_corr(alpha, first_state, prod_state, pos, N)
 
-print("Spur der Dichtematrix des Systems: "+str(rhoSystem.tr()))
+time_evolved = qutip.mesolve(Hint, rho_system_test, t, [], []).states
+print(time_evolved[-1].ptrace(N))
+fidelity_of_t = [fidelity(Qobj([[1,0],[0,0]]), timestep_evolved.ptrace(N)) for ind, timestep_evolved in enumerate(time_evolved)]
 
-t_stop = np.pi
-dt=1e-3
 
-t = np.arange(0,t_stop,dt)
+fig, (ax, axs1) = plt.subplots(2, 1, sharex=True, figsize=(12/2.54,9/2.54))
+sz = integrate(N, rho_system_test, t, "me", "perf")
 
-#result = qutip.mesolve(Hint, initSystem, t, [], []).states
-bigZ = sigmaz()
-"""
-#myPlots.plotFidelity(initSystem, t, "State Transfer $F(t)=\mel{N}{U(t)}{1}$ of the first state to the last state,\\\\ \\ \\ \\ with $\\rho_0(0) = \\frac{1}{2}(\dyad{0}+\dyad{1})$ and $\\rho_{i\\neq 0}(0) = \dyad{0}$", 'FidelityONE')
-egestest = [0 for dt in t]
-colors=["#7aa0c4","#ca82e1" ,"#8bcd50","#e18882","#acb053"]
-fig, axs = plt.subplots(5,1, sharex=True, sharey=True)#, figsize=(6,9))
-axs = axs.ravel()
-for i in [0,1,2,3,4]:
-	expsigmaZ = []
-	expsigmaZ = [(bigZ * result[dt].ptrace(i)).tr() for dt in range(len(t))]
-	egestest = [egestest[n] + expsigmaZ[n] for n in range(len(expsigmaZ))]
-	axs[i].plot(t, expsigmaZ, color = colors[i],label="$\expval{\sigma^z}_"+str(i)+"$")
-	axs[i].set_ylabel("$\expval{\sigma^z}$")
-	#axs[i].legend()
-axs[0].set_title("$\expval{\sigma^z}$")
-axs[4].set_xlabel("time")
-fig.legend(loc=7)
+for n in range(N+1):
+    ax.plot(t, sz[n], label=r"$\expval{\sigma^z_{%d}}$"%(n+1), lw=1.5, color=cmap((n+1)/(N+2)))
+ax.set_xlabel(r'Time')
+ax.set_ylabel(r'$\expval{\sigma^z_i}$')
+axs1.plot(t, fidelity_of_t, label=r"$\alpha = \alpha_\mathrm{max}$", color=cmap(1/3))
+fig.legend(loc=8, ncol=4)
 fig.tight_layout()
-fig.subplots_adjust(right=0.8)   
+fig.subplots_adjust(bottom=.26)
 plt.show()
-print("Gesamtenergie: "+str(sum(egestest)/len(egestest))+"\nStandardabweichung: " +str(np.std(egestest))+"\ntanh(beta) = "+str(np.tanh(beta)))
+
+#print(rho_system_test, rho_system_test.tr())
+
+
 """
 
-maxEvo = qutip.mesolve(Hint, rhoSystem, t, [], []).states
-point5Evo = qutip.mesolve(Hint, rhoSystempoint5, t, [], []).states
-point1Evo = qutip.mesolve(Hint, rhoSystempoint1, t, [], []).states
-zeroEvo = qutip.mesolve(Hint, rhoSystemzero, t, [], []).states
+maxEvo = qutip.mesolve(Hint, rho_system, t, [], []).states
 
 
-maxFid = [fidelity(firstState, maxEvo[dt].ptrace(N)) for dt in range(len(t))]
-point5Fid = [fidelity(firstState, point5Evo[dt].ptrace(N)) for dt in range(len(t))]
-point1Fid = [fidelity(firstState, point1Evo[dt].ptrace(N)) for dt in range(len(t))]
-zeroFid = [fidelity(firstState, zeroEvo[dt].ptrace(N)) for dt in range(len(t))]
 
-fig, (axs1, axs2, axs3, axs4) = plt.subplots(4,1,sharex=True, sharey=True, figsize=(12,6))
+maxFid = [fidelity(first_state, maxEvo[dt].ptrace(N)) for dt in range(len(t))]
 
 
+fig, axs1 = plt.subplots(4,1,sharex=True, sharey=True, figsize=(12,6))
 axs1.plot(t, maxFid, label="alpha = alpha max")
-print('-')
-axs2.plot(t, point5Fid, label="alpha = .5*alpha_max")
-print('--')
-axs3.plot(t, point1Fid, label="alpha = .1*alpha_max")
-print('---')
-axs4.plot(t, zeroFid, label="alpha = 0")
-print('----')
 
 
 fig.legend(loc=7)
@@ -105,35 +111,17 @@ plt.show()
 # kullback leibler divergence
 
 qEntmax = [entropy_vn(maxEvo[dt].ptrace(N), base=np.e) for dt in range(len(t))]
-qEntpoint5 = [entropy_vn(point5Evo[dt].ptrace(N), base=np.e) for dt in range(len(t))]
-qEntpoint1 = [entropy_vn(point1Evo[dt].ptrace(N), base=np.e) for dt in range(len(t))]
-qEntzero = [entropy_vn(zeroEvo[dt].ptrace(N), base=np.e) for dt in range(len(t))]
 print('#')
 infoFlowmax = np.square(np.diff(qEntmax)/t[1])
-infoFlowpoint5 = np.square(np.diff(qEntpoint5)/t[1])
-infoFlowpoint1 = np.square(np.diff(qEntpoint1)/t[1])
-infoFlowzero = np.square(np.diff(qEntzero)/t[1])
 print('##')
 maxHeatlim = [-1.j *(np.pi/3 *1 / (np.log(2)**2)) * (commutator(Hint, maxEvo[dt]).ptrace(N) * sigmaz()).tr() for dt in range(len(t))]
-point5Heatlim = [-1.j *(np.pi/3 *1 / (np.log(2)**2)) * (commutator(Hint, point5Evo[dt]).ptrace(N) * sigmaz()).tr() for dt in range(len(t))]
-point1Heatlim = [-1.j *(np.pi/3 *1 / (np.log(2)**2)) * (commutator(Hint, point1Evo[dt]).ptrace(N) * sigmaz()).tr() for dt in range(len(t))]
-zeroHeatlim = [-1.j *(np.pi/3 *1 / (np.log(2)**2)) * (commutator(Hint, zeroEvo[dt]).ptrace(N) * sigmaz()).tr() for dt in range(len(t))]
 print('###')
-fig, (ax1, ax2, ax3, ax4) = plt.subplots(4,1,sharex=True, sharey=True, figsize=(12,6))
+fig, ax1 = plt.subplots(4,1,sharex=True, sharey=True, figsize=(12,6))
 print('####')
 
 ax1.plot(t, maxHeatlim, label="alpha = alpha max")
 ax1.plot(t[:-1], infoFlowmax, label="alpha = alpha max")
 print('-')
-ax2.plot(t, point5Heatlim, label="alpha = .5*alpha_max")
-ax2.plot(t[:-1], infoFlowpoint5, label="alpha = .5*alpha_max")
-print('--')
-ax3.plot(t, point1Heatlim, label="alpha = .1*alpha_max")
-ax3.plot(t[:-1], infoFlowpoint1, label="alpha = .1*alpha_max")
-print('---')
-ax4.plot(t, zeroHeatlim, label="alpha = 0")
-ax4.plot(t[:-1], infoFlowzero, label="alpha = 0")
-print('----')
 
 #ax1.axhline(0,color='grey')
 #ax2.axhline(0,color='grey')
@@ -148,23 +136,24 @@ plt.savefig("testplot.pdf")
 plt.show()
 
 """
+"""
 def myqEnt(N):
-	qEnt = [entropy_vn(timeEvo(dt, initSystem, Hint).ptrace(N), base=np.e) for dt in t]
+	qEnt = [entropy_vn(timeEvo(dt, init_system, Hint).ptrace(N), base=np.e) for dt in t]
 	myInfoflow = [(qEnt[i+1] - qEnt[i])/t[1] for i in range(0,len(qEnt)-1)]
 	myHeatlim = [-1.j *(np.pi/3 *1 / (np.log(2)**2)) * (commutator(Hint, result[dt]).ptrace(N) * sigmaz()).tr() for dt in range(len(t))]
-	#myHeatlim = [(np.pi/3 *1 / (np.log(2)**2)) * expect(timeEvo(dt, initSystem, Hint).ptrace(N), sigmaz()) for dt in t]
+	#myHeatlim = [(np.pi/3 *1 / (np.log(2)**2)) * expect(timeEvo(dt, init_system, Hint).ptrace(N), sigmaz()) for dt in t]
 	#myHeatlim = deriv(t[1], myHeatlim)
-	#myHeat = [-1.j * (commutator(timeEvo(dt, initSystem, Hint), Hint).ptrace(N) * -sigmaz()).tr() for dt in t]
+	#myHeat = [-1.j * (commutator(timeEvo(dt, init_system, Hint), Hint).ptrace(N) * -sigmaz()).tr() for dt in t]
 	return qEnt, myInfoflow, myHeatlim#, myHeat
-myKLdiv = [entropy_relative(firstState.unit(), timeEvo(dt, initSystem, Hint).ptrace(N)) for dt in t]
+myKLdiv = [entropy_relative(first_state.unit(), timeEvo(dt, init_system, Hint).ptrace(N)) for dt in t]
 #print(myKLdiv[-1])
 
 helper = myqEnt(N)[1] 
 myInfoflow2 = [helper[n]**2 for n in range(0,199)]
 
-myTest = [-1.j * (commutator(timeEvo(dt, initSystem, Hint), Hint).unit().ptrace(N) * sigmay()).tr() for dt in t]
+myTest = [-1.j * (commutator(timeEvo(dt, init_system, Hint), Hint).unit().ptrace(N) * sigmay()).tr() for dt in t]
 #print(myTest)
-myHeat = [-1.j * (commutator(timeEvo(dt, initSystem, Hint), Hint).unit().ptrace(N) * sigmaz()).tr() for dt in t]
+myHeat = [-1.j * (commutator(timeEvo(dt, init_system, Hint), Hint).unit().ptrace(N) * sigmaz()).tr() for dt in t]
 #print(np.mean(myHeat))
 #print([commutator(result[dt], Hint).ptrace(N) for dt in range(len(t))])
 fig, ax = plt.sub(figsize=(32/3,6))
