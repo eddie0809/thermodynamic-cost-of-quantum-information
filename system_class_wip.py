@@ -97,7 +97,7 @@ def thermal_state(beta):
     return rho/Z
 
 
-class Simulation: 
+class System: 
     def __init__(self, t, N, H_given, alpha_reduced, beta) -> None:
         self.t = t                      # array of timesteps
         self.N = N
