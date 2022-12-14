@@ -16,7 +16,7 @@ def quantum_discord(rho):
 
     x = Qobj(x)
     V = Qobj(V)
-    Lambda = x*x.dag() + V*V.dag()
+    Lambda = (x*x.dag() + V*V.dag())/4
 
     k = max(Lambda.eigenenergies())
 

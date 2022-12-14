@@ -21,6 +21,6 @@ def generate_hamiltonian(N):
     J = 1/2
     Hint = J * Hint # change interaction strength 
     H0 = 0
-    for i in range(1,N+1):
+    for i in range(0,N+1):
         H0 = H0 - my_states["sigmaZ", i]
     return H0 + Hint
