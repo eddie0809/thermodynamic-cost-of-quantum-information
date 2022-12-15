@@ -16,7 +16,9 @@ from q_discord import quantum_discord
 #
 # system(N, pos_corr, H_given, beta).time_evo(t) should return the time evolution for some time t (numpy array)
 #
-# test
+# so far: only system with correlations at position 1&2, possibly subject to change
+# 
+# playing around with alpha and beta can give some uncorrelated initial state
 
 def integrate(N, H, psi0, tlist, solver):
 
