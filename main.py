@@ -1,7 +1,7 @@
 import numpy as np
 from generate_states import generate_hamiltonian
 
-import system_class_wip
+import xy_chain
 
 
 t_stop = np.pi
@@ -14,7 +14,7 @@ Hint = generate_hamiltonian(N)
 poss_alpha = [i/100 for i in range(101)]
 
 for ind, reduced_alpha in enumerate(poss_alpha):
-	system = system_class_wip.System(t, N, Hint, reduced_alpha, beta)
+	system = xy_chain.System(t, N, Hint, reduced_alpha, beta)
 	system.calculate_quantities()
-	system_class_wip.write_alpha_checkpoint(system.quantities, "pickled_data/N="+str(N+1)+"/quantities_with_reduced_alpha="+str(ind)+"_"+str(poss_alpha.index(1)))
-	system_class_wip.write_alpha_checkpoint(system.integrated, "pickled_data/N="+str(N+1)+"/integration_with_reduced_alpha="+str(ind)+"_"+str(poss_alpha.index(1)))
+	xy_chain.write_alpha_checkpoint(system.quantities, "pickled_data/N="+str(N+1)+"/quantities_with_reduced_alpha="+str(ind)+"_"+str(poss_alpha.index(1)))
+	xy_chain.write_alpha_checkpoint(system.integrated, "pickled_data/N="+str(N+1)+"/integration_with_reduced_alpha="+str(ind)+"_"+str(poss_alpha.index(1)))

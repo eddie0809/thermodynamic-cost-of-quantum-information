@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 
-import os
 import glob
 import pickle
-import argparse
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
-from scipy.optimize import curve_fit
 
 # for using tex formatting and font in plots
 
@@ -30,8 +27,9 @@ for file in files:
         discord.append(local_dict['discord'])
         fid_of_t.append(local_dict['fidelity'])
 
-
+fig = plt.figure(figsize=(12,5))
 plt.plot(discord, i_dot_sq_max/i_dot_sq_max[-1], '.', color=cmap(1/2), label = r'$\frac{\dot{I}_\mathrm{max}^2(D(\alpha))}{\dot{I}_\mathrm{max}^2(D(\alpha=0))}$')
+fig.legend()
 
 #t_stop = np.pi
 #dt = 1e-3
