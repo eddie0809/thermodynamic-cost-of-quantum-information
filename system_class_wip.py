@@ -151,14 +151,13 @@ class System:
         self.quantities["i_dot_sq_max"] = np.max(self.quantities["i_dot_sq"])
 
     
-    def e_dot(self):
+    def e_dot(self): # integrate does the same thing faster, self.integrated
         self.quantities["e_dot"] = [-1.j*(commutator(self.H, time_evolved).ptrace(self.N) * (sigmaz())).tr() for time_evolved in self.time_evo]
 
 
     def calculate_quantities(self):
         self.arrival_time()
         self.i_dot_sq_max()
-        self.e_dot()
 
 
 def write_alpha_checkpoint(system_quantities, path, overwrite=False):

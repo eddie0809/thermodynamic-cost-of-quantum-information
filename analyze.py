@@ -6,7 +6,9 @@ import pickle
 import argparse
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
+from scipy.optimize import curve_fit
 
 # for using tex formatting and font in plots
 
@@ -16,22 +18,33 @@ mpl.rcParams['font.family'] = ['serif']
 
 cmap = mpl.cm.get_cmap('viridis')
 
-files = [file for file in glob.glob("pickled_data/N=6/test_*")]
+files = [file for file in glob.glob("pickled_data/N=6/2022-12-15/quantities/*")]
 files.sort()
 i_dot_sq_max = []
 discord = []
-arr_time = []
+fid_of_t = []
 for file in files:
     with open(file, 'rb') as f:
         local_dict = pickle.load(f)
         i_dot_sq_max.append(local_dict['i_dot_sq_max'])
         discord.append(local_dict['discord'])
-        arr_time.append(np.nanmin(local_dict['time_where_kld_isclose_0']))
-print(arr_time)
+        fid_of_t.append(local_dict['fidelity'])
 
-plt.plot(discord, i_dot_sq_max)
-plt.plot(discord[0:4], arr_time[0:4])
+
+plt.plot(discord, i_dot_sq_max/i_dot_sq_max[-1], '.', color=cmap(1/2), label = r'$\frac{\dot{I}_\mathrm{max}^2(D(\alpha))}{\dot{I}_\mathrm{max}^2(D(\alpha=0))}$')
+
+#t_stop = np.pi
+#dt = 1e-3
+#t = np.arange(0, t_stop, dt)
+##
+#fig, ax = plt.subplots(subplot_kw={'projection': '3d'})
+#for ind, discord_value in enumerate(discord):
+#    ax.plot(t, fid_of_t[ind], '.', markersize=.5, zs=discord_value, zdir='y', color=cmap(discord_value/max(discord)))
+#ax.set_xlim(0,3.2)
+#ax.set_zlim(1/np.sqrt(2),1)
+#ax.view_init(elev=20., azim=-90)
 plt.show()
+
 #fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(12,8))
 
 #for n in range(N+1):
