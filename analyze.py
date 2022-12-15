@@ -19,28 +19,39 @@ files = [file for file in glob.glob("pickled_data/N=6/2022-12-15/quantities/*")]
 files.sort()
 i_dot_sq_max = []
 discord = []
-fid_of_t = []
-for file in files:
+fid_of_t = np.zeros((3142, len(files)))
+i_dot_sq_of_t = np.zeros((3141, len(files)))
+for ind, file in enumerate(files):
     with open(file, 'rb') as f:
         local_dict = pickle.load(f)
         i_dot_sq_max.append(local_dict['i_dot_sq_max'])
         discord.append(local_dict['discord'])
-        fid_of_t.append(local_dict['fidelity'])
+        fid_of_t[:,ind] = local_dict['fidelity']
+        i_dot_sq_of_t[:,ind] = local_dict['i_dot_sq']
+discord = np.array(discord)
 
-fig = plt.figure(figsize=(12,5))
-plt.plot(discord, i_dot_sq_max/i_dot_sq_max[-1], '.', color=cmap(1/2), label = r'$\frac{\dot{I}_\mathrm{max}^2(D(\alpha))}{\dot{I}_\mathrm{max}^2(D(\alpha=0))}$')
-fig.legend()
-
-#t_stop = np.pi
-#dt = 1e-3
-#t = np.arange(0, t_stop, dt)
+with open("fid_of_discord.npz", 'wb') as f:
+    np.savez(f, fid_of_t=fid_of_t, discord=discord)
+#
+#fig, ax =plt.subplots(figsize=(8, 4.5))
+#ax.plot(discord, i_dot_sq_max/i_dot_sq_max[-1], '.', color=cmap(1/2), label = r'$\frac{\dot{I}_\mathrm{max}^2(D(\alpha))}{\dot{I}_\mathrm{max}^2(D(\alpha=0))}$')
+t_stop = np.pi
+dt = 1e-3
+t = np.arange(0, t_stop, dt)
 ##
-#fig, ax = plt.subplots(subplot_kw={'projection': '3d'})
-#for ind, discord_value in enumerate(discord):
-#    ax.plot(t, fid_of_t[ind], '.', markersize=.5, zs=discord_value, zdir='y', color=cmap(discord_value/max(discord)))
-#ax.set_xlim(0,3.2)
+fig, ax = plt.subplots(subplot_kw={'projection': '3d'})
+for ind, discord_value in enumerate(discord):
+    ax.plot(t[:-1], i_dot_sq_of_t[:,ind], '.', markersize=.5, zs=discord_value, zdir='y', color=cmap(discord_value/max(discord)))
+    new_zs = np.argmax(i_dot_sq_of_t[:,ind])*1e-3
+    print(new_zs)
+    ax.scatter(new_zs, i_dot_sq_max[ind], zdir='y',zs=discord_value, color='black')
+ax.set_ylim(0,max(discord))
+ax.set_ylabel(r"$D(\alpha)$")
+ax.set_xlabel(r"$t$")
+#ax.set_ylabel(r"$\frac{\dot{I}_\mathrm{max}^2(D(\alpha))}{\dot{I}_\mathrm{max}^2(D(\alpha=0))}$")
 #ax.set_zlim(1/np.sqrt(2),1)
-#ax.view_init(elev=20., azim=-90)
+ax.view_init(elev=36., azim=70)
+plt.savefig("plots/i_dot_sq_of_discord_3dplot_with_max.pdf")
 plt.show()
 
 #fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(12,8))

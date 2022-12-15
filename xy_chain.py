@@ -18,7 +18,8 @@ from q_discord import quantum_discord
 #
 # so far: only system with correlations at position 1&2, possibly subject to change
 # 
-# playing around with alpha and beta can give some uncorrelated initial state
+# playing around with alpha and beta can give some arbitrary uncorrelated initial state at position 1
+
 
 def integrate(N, H, psi0, tlist, solver):
 
@@ -153,13 +154,14 @@ class System:
         self.quantities["i_dot_sq_max"] = np.max(self.quantities["i_dot_sq"])
 
     
-    def e_dot(self): # integrate does the same thing faster, self.integrated
+    def e_dot(self): # differentiating self.integrated does the same thing quicker (so far)
         self.quantities["e_dot"] = [-1.j*(commutator(self.H, time_evolved).ptrace(self.N) * (sigmaz())).tr() for time_evolved in self.time_evo]
 
 
     def calculate_quantities(self):
         self.arrival_time()
         self.i_dot_sq_max()
+        self.e_dot()
 
 
 def write_alpha_checkpoint(system_quantities, path, overwrite=False):
