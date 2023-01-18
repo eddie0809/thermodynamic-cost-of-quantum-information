@@ -15,35 +15,45 @@ mpl.rcParams['font.family'] = ['serif']
 
 cmap = mpl.cm.get_cmap('viridis')
 
-files = [file for file in glob.glob("pickled_data/N=6/two_*")]
+files = [file for file in glob.glob("pickled_data/N=6/new_two_*")]
 files.sort()
-files_2 = [file for file in glob.glob("pickled_data/N=6/quantities*")]
+files_2 = [file for file in glob.glob("pickled_data/N=6/2022-12-16/quantities*")]
 files_2.sort()
-#i_dot_sq_max = []
-discord = []
 
+i_dot_sq_max = []
+discord = []
+#
 for ind, file in enumerate(files_2):
     with open(file, 'rb') as f:
         local_dict = pickle.load(f)
-        #i_dot_sq_max.append(local_dict['i_dot_sq_max'])
+        i_dot_sq_max.append(local_dict['i_dot_sq_max'])
         discord.append(local_dict['discord'])
+#
+#
+#fid_of_t = np.zeros((3142,len(files)))
+#i_dot_sq_of_t = np.zeros((3141, len(files)))
+#for ind, file in enumerate(files):
+#    with open(file, 'rb') as f:
+#        local_dict = pickle.load(f)
+#        i_dot_sq_max.append(local_dict['i_dot_sq_max'])
+#        discord.append(local_dict['discord'])
+#        fid_of_t[:,ind] = local_dict
+#        #i_dot_sq_of_t[:,ind] = local_dict['i_dot_sq']
+discord = np.array(discord)
+print(discord)
 
-fid_of_t = np.zeros((3142,len(files)))
-i_dot_sq_of_t = np.zeros((3141, len(files)))
-for ind, file in enumerate(files):
-    with open(file, 'rb') as f:
-        local_dict = pickle.load(f)
-        #i_dot_sq_max.append(local_dict['i_dot_sq_max'])
-        #discord.append(local_dict['discord'])
-        fid_of_t[:,ind] = local_dict
-        #i_dot_sq_of_t[:,ind] = local_dict['i_dot_sq']
-#discord = np.array(discord)
-print(fid_of_t)
-with open("two_fid_of_discord.npz", 'wb') as f:
-    np.savez(f, fid_of_t=fid_of_t, discord=discord)
+
+#npzfile_both = np.load("two_fid_of_discord.npz")
+#
+#fid_of_t_both_qubits = npzfile_both['fid_of_t']
+#discord_both_qubits = npzfile_both['discord']
+
+
+#with open("new_two_fid_of_discord.npz", 'wb') as f:
+#    np.savez(f, fid_of_t=fid_of_t, discord=discord)
 #
 #fig, ax =plt.subplots(figsize=(8, 4.5))
-#ax.plot(discord, i_dot_sq_max/i_dot_sq_max[-1], '.', color=cmap(1/2), label = r'$\frac{\dot{I}_\mathrm{max}^2(D(\alpha))}{\dot{I}_\mathrm{max}^2(D(\alpha=0))}$')
+##ax.plot(discord, i_dot_sq_max/i_dot_sq_max[-1], '.', color=cmap(1/2), label = r'$\frac{\dot{I}_\mathrm{max}^2(D(\alpha))}{\dot{I}_\mathrm{max}^2(D(\alpha=0))}$')
 #t_stop = np.pi
 #dt = 1e-3
 #t = np.arange(0, t_stop, dt)
@@ -60,7 +70,7 @@ with open("two_fid_of_discord.npz", 'wb') as f:
 ##ax.set_ylabel(r"$\frac{\dot{I}_\mathrm{max}^2(D(\alpha))}{\dot{I}_\mathrm{max}^2(D(\alpha=0))}$")
 ##ax.set_zlim(1/np.sqrt(2),1)
 #ax.view_init(elev=36., azim=70)
-#plt.savefig("plots/i_dot_sq_of_discord_3dplot_with_max.pdf")
+##plt.savefig("plots/i_dot_sq_of_discord_3dplot_with_max.pdf")
 #plt.show()
 
 #fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(12,8))

@@ -94,6 +94,43 @@ def system_arbitrary_pos_of_corr(alpha, first_state, prod_state, pos, N):
 	return rho_system
 
 
+def init_system_arb_corr(first_state, nth_state, corr, alpha, N):
+    qubit_states = [Qobj([[0,0],[0,1]]) for i in range(N+1)]
+    qubit_states[corr[0]] = first_state
+    qubit_states[corr[1]] = nth_state
+    
+    rho_system = qubit_states[0]    # calculate product state of system
+
+    for state in qubit_states[1:]:
+        rho_system = tensor(rho_system, state)
+
+    # calculate longrange correlation term.
+    # this part of the code is proper garbage, but mathematically correct
+    # i need to think of something more efficient here
+    identities = [qeye(2) for i in range(corr[1]-corr[0])]  
+    sigma_p = [sigmap()]
+    sigma_m = [sigmam()]
+    sigma_p_0 = sigma_p.copy()
+    sigma_p_0.extend(identities)
+    sigma_m_0 = sigma_m.copy()
+    sigma_m_0.extend(identities)
+    sigma_p_1 = sigma_p.copy()
+    sigma_p_1.extend(identities)
+    sigma_p_1.reverse()
+    sigma_m_1 = sigma_m.copy()
+    sigma_m_1.extend(identities)
+    sigma_m_1.reverse()
+
+    chi = alpha * (tensor(sigma_p_0) * tensor(sigma_m_1) - tensor(sigma_m_0) * tensor(sigma_p_1))
+
+    chi_helper = [qeye(2) for i in range(N+1)]
+    chi_helper[corr[0]] = chi
+    del chi_helper[corr[0]+1:corr[1]+1]
+    total_chi = tensor(chi_helper)
+    rho_system = rho_system + total_chi
+    return rho_system
+
+
 def thermal_state(beta):
     rho = (-beta * sigmaz()).expm()
     Z = rho.tr()
@@ -101,23 +138,27 @@ def thermal_state(beta):
 
 
 class System: 
-    def __init__(self, t, N, H_given, alpha_reduced, beta) -> None:
+    def __init__(self, t, N, H_given, alpha_reduced, beta: list, corr: list) -> None:
         self.t = t                      # array of timesteps
-        self.N = N
+        self.dt = self.t[1]             # length of timestep
+        self.N = N                      # Number of qubits
         self.H = H_given                # Hamiltonian
-        self.beta = beta                # list of temperatures
-        self.dt = self.t[1]             # timestep
-        self.alpha = alpha_reduced * 1.j / (4*np.cosh(self.beta[0])*np.cosh(self.beta[1]))
+        self.beta = beta                # list of temperatures of the correlated qubits
         
-        self.first_state = thermal_state(self.beta[0])
-        self.second_state = thermal_state(self.beta[1])
+        self.first_state = thermal_state(self.beta[0])  # first state in the correlation pair
+        self.second_state = thermal_state(self.beta[1]) # second state in the correlation pair
 
-        prod_state = tensor(self.first_state, self.second_state)
-        chi = self.alpha * tensor(Qobj([[0,1],[0,0]]), Qobj([[0,0],[1,0]])) - self.alpha * tensor(Qobj([[0,0],[1,0]]), Qobj([[0,1],[0,0]]))
-
-        self.corr_state = prod_state + chi
-
-        self.rho = init_system(self.alpha, self.first_state, self.second_state, self.N)
+        self.alpha = alpha_reduced * 1.j / (4*np.cosh(self.beta[0])*np.cosh(self.beta[1]))
+        self.prod_state = tensor(self.first_state, self.second_state) # product state
+        if type(corr) == None:
+            #self.prod_state = tensor(self.first_state, self.second_state) # product state
+            self.chi = self.alpha * tensor(Qobj([[0,1],[0,0]]), Qobj([[0,0],[1,0]])) - self.alpha * tensor(Qobj([[0,0],[1,0]]), Qobj([[0,1],[0,0]]))
+            self.corr_state = self.prod_state + self.chi
+            self.rho = init_system(self.alpha, self.first_state, self.second_state, self.N)
+        else:    
+            self.corr = corr                # list of qubits to correlate. if None, defaults to [0,1]
+            self.corr_state = self.prod_state + self.alpha * tensor(Qobj([[0,1],[0,0]]), Qobj([[0,0],[1,0]])) - self.alpha * tensor(Qobj([[0,0],[1,0]]), Qobj([[0,1],[0,0]]))
+            self.rho  = init_system_arb_corr(first_state=self.first_state, nth_state=self.second_state, corr=self.corr, alpha = self.alpha, N=self.N)
 
         self.discord = quantum_discord(self.corr_state)
 

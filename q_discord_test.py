@@ -4,14 +4,23 @@ import numpy as np
 from numpy import exp, cosh, sqrt
 from qutip import *
 from q_discord import quantum_discord
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+
+# for using tex formatting and font in plots
+
+plt.rcParams.update({"text.usetex": True,}) 
+plt.rcParams['text.latex.preamble'] = r'\usepackage[utf8]{inputenc}\usepackage[T1]{fontenc}\usepackage{lmodern}\inputencoding{utf8}\usepackage{amsmath}\usepackage{amssymb}\usepackage{dsfont}\usepackage{mathtools}\usepackage{physics}'
+mpl.rcParams['font.family'] = ['serif']
+
+cmap = mpl.cm.get_cmap('viridis')
 
 steps = 100     # number of timesteps
 D = np.zeros(steps)
 a = np.linspace(0,1,steps)
 
-b1 = 10
-b2 = 10
+b1 = 0
+b2 = 0
 
 p1 = exp(-b1)/(2*cosh(b1)) #np.array([[exp(-b1), 0], [0, exp(b1)]])
 p2 = exp(-b2)/(2*cosh(b2)) #np.array([[exp(-b2), 0], [0, exp(b2)]]) 
@@ -28,5 +37,10 @@ for n in range(steps):
     rho = tensor(A,B) + chi[n]
     D[n] = quantum_discord(rho)
 
-plt.plot(a,D)
+fig = plt.figure(figsize=(12/2.54,5/2.54))
+plt.plot(a,D, color = cmap(1/2), label=r'Geometric Discord')
+plt.xlabel(r'$\alpha/\alpha_\text{max}$')
+plt.ylabel(r'$D(\alpha)$')
+fig.tight_layout()
+plt.savefig("geom_discord.pdf")
 plt.show()
