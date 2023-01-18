@@ -1,4 +1,3 @@
 # about
 
-these are the files for the numerics that went into my thesis and the subsequent publication.
-
+simulation data and code for _thermodynamic cost of quantum information_ research project
