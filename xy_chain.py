@@ -127,8 +127,8 @@ def init_system_arb_corr(first_state, nth_state, corr, alpha, N):
     chi_helper[corr[0]] = chi
     del chi_helper[corr[0]+1:corr[1]+1]
     total_chi = tensor(chi_helper)
-    rho_system = rho_system + total_chi
-    return rho_system
+    #rho_system = rho_system + total_chi
+    return rho_system, total_chi
 
 
 def thermal_state(beta):
@@ -138,7 +138,7 @@ def thermal_state(beta):
 
 
 class System: 
-    def __init__(self, t, N, H_given, alpha_reduced, beta: list, corr: list) -> None:
+    def __init__(self, t, N, H_given, alpha_reduced, beta: list) -> None: # , corr: list
         self.t = t                      # array of timesteps
         self.dt = self.t[1]             # length of timestep
         self.N = N                      # Number of qubits
@@ -149,16 +149,18 @@ class System:
         self.second_state = thermal_state(self.beta[1]) # second state in the correlation pair
 
         self.alpha = alpha_reduced * 1.j / (4*np.cosh(self.beta[0])*np.cosh(self.beta[1]))
-        self.prod_state = tensor(self.first_state, self.second_state) # product state
-        if type(corr) == None:
-            #self.prod_state = tensor(self.first_state, self.second_state) # product state
+        #self.prod_state = tensor(self.first_state, self.second_state) # product state
+        if True: # a density matrix with longrange correlations is not positive
+            self.prod_state = tensor(self.first_state, self.second_state) # product state
             self.chi = self.alpha * tensor(Qobj([[0,1],[0,0]]), Qobj([[0,0],[1,0]])) - self.alpha * tensor(Qobj([[0,0],[1,0]]), Qobj([[0,1],[0,0]]))
             self.corr_state = self.prod_state + self.chi
             self.rho = init_system(self.alpha, self.first_state, self.second_state, self.N)
-        else:    
-            self.corr = corr                # list of qubits to correlate. if None, defaults to [0,1]
-            self.corr_state = self.prod_state + self.alpha * tensor(Qobj([[0,1],[0,0]]), Qobj([[0,0],[1,0]])) - self.alpha * tensor(Qobj([[0,0],[1,0]]), Qobj([[0,1],[0,0]]))
-            self.rho  = init_system_arb_corr(first_state=self.first_state, nth_state=self.second_state, corr=self.corr, alpha = self.alpha, N=self.N)
+        #else:    
+        #    self.corr = corr                # list of qubits to correlate. if None, defaults to [0,1], see if condition
+        #    rho, self.chi  = init_system_arb_corr(first_state=self.first_state, nth_state=self.second_state, corr=self.corr, alpha = self.alpha, N=self.N)
+        #    self.rho = rho + self.chi
+        #    self.prod_state = self.rho.ptrace(self.corr)
+        #    self.corr_state = self.prod_state + self.alpha * tensor(Qobj([[0,1],[0,0]]), Qobj([[0,0],[1,0]])) - self.alpha * tensor(Qobj([[0,0],[1,0]]), Qobj([[0,1],[0,0]]))
 
         self.discord = quantum_discord(self.corr_state)
 
