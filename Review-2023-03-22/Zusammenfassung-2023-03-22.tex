@@ -56,7 +56,7 @@ In \citeyear{BA_Pendry_1983}, \citeauthor{BA_Pendry_1983} derived a bound on the
 This result is derived using classical statistical mechanics \cite{BA_Pendry_1983}. This classical framework, however,
 neglects the effects of genuine quantum mechanical phenomena, such as quantum correlations. We show that this
 classical inequality is violated when in a system with quantum correlations.
-
+\section{The model}
 Consider a chain of qubits in the Heisenberg-$XY$ model. Restricting their interaction to their nearest neighbors allows
 us to draw a comparison to Pendry's original derivation with fermions using Jordan-Wigner transform, mapping a chain of
 spin-$1/2$ qubits to a chain of spinless fermions. The information flow is then the time derivative of 
@@ -69,9 +69,10 @@ In particular, we have the Hamiltonian of this system as
 \end{align}
 This ensures a predictable periodic behaviour of the chain. This can be made apparent by considering the local
 magnetization $\expval{\sigma^z_k}$ of the qubits. \Cref{fig:no-corr} shows the time evolution of the quibts'
-magnetization.
+magnetization.\footnote{We choose $\lambda$ to be $1$. It was shown in \cite{BA_Christandl_2004} that at
+time $t=\pi/\lambda$, perfect state transfer is achieved}
 
-\begin{figure}
+\begin{figure}[H]
     \centering
     \includegraphics{expval_z.pdf}
     \caption{Time evolution of the individual magnetizations $\expval{\sigma^z_i}$ for the system with
@@ -80,9 +81,14 @@ magnetization.
     Qubits $i>1$ are prepared in the ground state at time $t=0$.}
     \label{fig:no-corr}
 \end{figure}
+\section{Quantum correlations}
+In a work by \citeauthor{BA_kaonan_correlations}, it was shown that certain quantum correlations
+\emph{invert} the flow of energy \cite{BA_kaonan_correlations}. Heat flows not from hot to cold, but
+from cold to hot. \Cref{fig:corr} shows the chain with inital correlations at positions 1 and 2 of the chain.
+%\begin{figure}
+%    \centering
+%\end{figure}
 
-This 
-\cite{BA_kaonan_correlations}
 
 %\begin{displayquote}
 %Since energy is conserved the flow into this segment equals the
