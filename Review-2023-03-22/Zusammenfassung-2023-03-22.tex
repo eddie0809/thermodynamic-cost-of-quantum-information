@@ -35,6 +35,8 @@
 \usepackage{float}
 \usepackage{physics}
 
+\usepackage{caption}
+
 \usepackage{amssymb}
 \usepackage{amsmath}
 %\usepackage{pgfplots}
@@ -65,15 +67,29 @@ In particular, we have the Hamiltonian of this system as
     \shortintertext{with}\\
     J_k &= \frac{\lambda}{2}\sqrt{k\cdot(N-k)}.\nonumber
 \end{align}
+This ensures a predictable periodic behaviour of the chain. This can be made apparent by considering the local
+magnetization $\expval{\sigma^z_k}$ of the qubits. \Cref{fig:no-corr} shows the time evolution of the quibts'
+magnetization.
 
+\begin{figure}
+    \centering
+    \includegraphics{expval_z.pdf}
+    \caption{Time evolution of the individual magnetizations $\expval{\sigma^z_i}$ for the system with
+    Hamiltonian defined as in \cref{eq:hamiltonian-perfect-transfer}.
+    Qubit $i=1$ is prepared in the excited state at time $t=0$.
+    Qubits $i>1$ are prepared in the ground state at time $t=0$.}
+    \label{fig:no-corr}
+\end{figure}
+
+This 
 \cite{BA_kaonan_correlations}
 
-\begin{displayquote}
-Since energy is conserved the flow into this segment equals the
-flow out and therefore energy flow is conserved as is the particle flow. However,
-the entropy flow is not conserved but can only increase monotonically until thermal
-equilibrium is established.
-\end{displayquote}
+%\begin{displayquote}
+%Since energy is conserved the flow into this segment equals the
+%flow out and therefore energy flow is conserved as is the particle flow. However,
+%the entropy flow is not conserved but can only increase monotonically until thermal
+%equilibrium is established.
+%\end{displayquote}
 
 
 \printbibliography
