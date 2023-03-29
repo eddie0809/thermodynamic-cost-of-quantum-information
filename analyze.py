@@ -17,17 +17,25 @@ cmap = mpl.cm.get_cmap('viridis')
 
 files = [file for file in glob.glob("pickled_data/N=6/new_two_*")]
 files.sort()
-files_2 = [file for file in glob.glob("pickled_data/N=6/2022-12-16/quantities*")]
+files_2 = [file for file in glob.glob("pickled_data/N=6/metadata_for_*")]
 files_2.sort()
 
-i_dot_sq_max = []
+fidelity = []
 discord = []
+t=[]
 #
-for ind, file in enumerate(files_2):
+for ind, file in enumerate(files):
+    with open(file, 'rb') as f:
+        #local_dict = pickle.load(f)
+        #print(type(local_dict))
+        fidelity.append(pickle.load(f))
+for file in files_2:
     with open(file, 'rb') as f:
         local_dict = pickle.load(f)
-        i_dot_sq_max.append(local_dict['i_dot_sq_max'])
         discord.append(local_dict['discord'])
+        t.append(local_dict['t'])
+
+
 #
 #
 #fid_of_t = np.zeros((3142,len(files)))
@@ -39,6 +47,7 @@ for ind, file in enumerate(files_2):
 #        discord.append(local_dict['discord'])
 #        fid_of_t[:,ind] = local_dict
 #        #i_dot_sq_of_t[:,ind] = local_dict['i_dot_sq']
+print(len(fidelity))
 discord = np.array(discord)
 print(discord)
 
