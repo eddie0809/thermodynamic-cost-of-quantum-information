@@ -145,16 +145,18 @@ class System:
         self.H = H_given                # Hamiltonian
         self.beta = beta                # list of temperatures of the correlated qubits
         
+        self.meta = {"t":self.t, "dt":self.dt,"N":self.N, "beta":self.beta, "H":self.H}
+
         self.first_state = thermal_state(self.beta[0])  # first state in the correlation pair
         self.second_state = thermal_state(self.beta[1]) # second state in the correlation pair
 
         self.alpha = alpha_reduced * 1.j / (4*np.cosh(self.beta[0])*np.cosh(self.beta[1]))
         #self.prod_state = tensor(self.first_state, self.second_state) # product state
-        if True: # a density matrix with longrange correlations is not positive
-            self.prod_state = tensor(self.first_state, self.second_state) # product state
-            self.chi = self.alpha * tensor(Qobj([[0,1],[0,0]]), Qobj([[0,0],[1,0]])) - self.alpha * tensor(Qobj([[0,0],[1,0]]), Qobj([[0,1],[0,0]]))
-            self.corr_state = self.prod_state + self.chi
-            self.rho = init_system(self.alpha, self.first_state, self.second_state, self.N)
+        #if True: # a density matrix with longrange correlations is not positive semi-definite
+        self.prod_state = tensor(self.first_state, self.second_state) # product state
+        self.chi = self.alpha * tensor(Qobj([[0,1],[0,0]]), Qobj([[0,0],[1,0]])) - self.alpha * tensor(Qobj([[0,0],[1,0]]), Qobj([[0,1],[0,0]]))
+        self.corr_state = self.prod_state + self.chi
+        self.rho = init_system(self.alpha, self.first_state, self.second_state, self.N)
         #else:    
         #    self.corr = corr                # list of qubits to correlate. if None, defaults to [0,1], see if condition
         #    rho, self.chi  = init_system_arb_corr(first_state=self.first_state, nth_state=self.second_state, corr=self.corr, alpha = self.alpha, N=self.N)
@@ -167,6 +169,7 @@ class System:
         self.time_evo = qutip.mesolve(self.H, self.rho, self.t, [], []).states
         self.integrated = integrate(self.N, self.H, self.rho, self.t, "me")
         self.quantities = {"fidelity":[], "rel_ent":[], "i_dot_sq":[], "i_dot_sq_max":[], "e_dot":[], "time_where_kld_isclose_0":[], "fid_max":[], "discord":self.discord}
+        self.meta = {"t":self.t, "dt":self.dt,"N":self.N, "beta":self.beta, "H":self.H, "discord":self.discord}
 
     
     def single_state_fidelity(self):
