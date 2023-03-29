@@ -38,20 +38,21 @@ class HeisenbergXY:
         self.beta = beta                # list of temperatures of the correlated qubits
         self.alpha = alpha_reduced * self.get_max_alpha()
 
-        first_state  = (-beta[0]*sigmaz()).expm()/(2*np.cosh(beta[0]))
+        self.first_state  = (-beta[0]*sigmaz()).expm()/(2*np.cosh(beta[0]))
         second_state = (-beta[1]*sigmaz()).expm()/(2*np.cosh(beta[1]))
         
         self.chi = self.alpha * tensor(sigmap(), sigmam()) - self.alpha * tensor(sigmam(), sigmap())
-        self.corr_state = tensor(first_state, second_state) + self.chi
+        self.corr_state = tensor(self.first_state, second_state) + self.chi
         
         self.rho = self.init_system()
 
         self.discord = quantum_discord(self.corr_state)
+        
         self.calc_composite_ops()
         self.compute_xy_hamiltonian()
 
         self.time_evo = mesolve(self.H, self.rho, self.t, [], []).states
-        self.quantities = {"fidelity":[], "rel_ent":[], "i_dot_sq":[], "i_dot_sq_max":[], "e_dot":[], "time_where_kld_isclose_0":[], "fid_max":[], "discord":self.discord}
+        self.quantities = {}
         self.meta = {"t":self.t, "dt":self.dt,"N":self.N, "beta":beta, "H":self.H, "discord":self.discord}
 
 
