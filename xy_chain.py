@@ -4,8 +4,8 @@ import os
 import pickle
 import numpy as np
 
-from scipy.signal import argrelmin
 from qutip import *
+from scipy.signal import argrelmin
 
 from q_discord import quantum_discord
 
