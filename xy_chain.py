@@ -9,19 +9,10 @@ from scipy.signal import argrelmin
 
 from q_discord import quantum_discord
 
-# goal: system(10, 3, H, [a,b]) initializes a spinchain with given length (10), position of left qubit in corr state (3), an interaction H and two temperatures
-# for the thermal states to have, all at time t=0.
-#
-# system(N, pos_corr, H_given, beta).time_evo(t) should return the time evolution for some time t (numpy array)
-#
-# so far: only system with correlations at position 1&2, possibly subject to change
-# 
-# playing around with alpha and beta can give some arbitrary uncorrelated initial state at position 1
-
 """
-There used to be two functions here.
+There used to be two more functions.
 
-One returned a density matrix, where
+One returned a system with initial density matrix, where
 correlations could be at an arbitrary position. It can be found in a separate
 file named 'dumping_ground'.
 
@@ -53,7 +44,6 @@ class HeisenbergXY:
 
         self.time_evo = mesolve(self.H, self.rho, self.t, [], []).states
         self.quantities = {}
-        self.meta = {"t":self.t, "dt":self.dt,"N":self.N, "beta":beta, "H":self.H, "discord":self.discord}
 
 
     def calc_composite_ops(self):
