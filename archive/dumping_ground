@@ -1,0 +1,25 @@
+"""
+Dumping ground for a number of functions that _might_ be of use later. 
+"""
+
+"""
+def system_arbitrary_pos_of_corr(alpha, first_state, prod_state, pos, N):
+	if pos == 1:
+		return init_system(alpha, prod_state.ptrace(0),prod_state.ptrace(1), N)
+	qubit_states = []
+	i = 1
+	astar = -alpha
+	corr_state = prod_state + alpha * tensor(Qobj([[0,1],[0,0]]), Qobj([[0,0],[1,0]])) + astar * tensor(Qobj([[0,0],[1,0]]), Qobj([[0,1],[0,0]]))
+	rho_system = first_state
+	while i < pos-1:
+		qubit_states.append(Qobj([[0,0],[0,1]]))
+		i+=1
+	qubit_states.append(corr_state)
+	i+=2
+	while i<=N:
+		qubit_states.append(Qobj([[0,0],[0,1]]))
+		i+=1
+	for rho in qubit_states:
+		rho_system = tensor(rho_system, rho)
+	return rho_system
+"""
