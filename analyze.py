@@ -15,20 +15,27 @@ mpl.rcParams['font.family'] = ['serif']
 
 cmap = mpl.cm.get_cmap('viridis')
 
-files = [file for file in glob.glob("pickled_data/N=6/new_two_*")]
+files = [file for file in glob.glob("pickled_data/N=6/dict_*")]
 files.sort()
-files_2 = [file for file in glob.glob("pickled_data/N=6/metadata_for_*")]
-files_2.sort()
 
-fidelity = []
+quantities = []
+time_evo = []
+integrated = []
 discord = []
-t=[]
-
+alpha = []
 for ind, file in enumerate(files):
     with open(file, 'rb') as f:
-        fidelity.append(pickle.load(f))
-for file in files_2:
-    with open(file, 'rb') as f:
-        local_dict = pickle.load(f)
-        discord.append(local_dict['discord'])
-        t.append(local_dict['t'])
+        the_dict = pickle.load(f)
+        discord.append(the_dict['discord'])
+        alpha.append(the_dict['alpha'])
+        quantities.append(the_dict['quantities'])
+        time_evo.append(the_dict['time_evo'])
+        integrated.append(the_dict['integrated'])
+
+arr_time = [1e-3*quantities[ind]['local minima in rel ent'][0][0] for ind in range(len(files))]
+#print(discord, arr_time)
+fig, ax = plt.subplots(figsize=(12,5))
+ax.plot(discord, arr_time, '.')
+ax.set_xscale('log')
+#ax.plot(discord,alpha)
+plt.show()
