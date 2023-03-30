@@ -1,4 +1,7 @@
 __pycache__/
+pickled_data/20*
+archive/
+
 *.aux
 *.lof
 *.log
