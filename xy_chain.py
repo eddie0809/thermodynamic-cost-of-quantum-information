@@ -105,8 +105,8 @@ class HeisenbergXY:
     def arrival_time(self):
         self.single_state_fidelity()
         self.single_state_rel_ent()
-        poss_t = argrelmin(self.single_rel_ent)
-        self.quantities["local minima in rel ent"] = poss_t
+        self.poss_t = argrelmin(self.single_rel_ent)
+        self.quantities["local minima in rel ent"] = self.poss_t
         
 
     def i_dot_sq(self):
