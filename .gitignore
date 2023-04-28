@@ -1,6 +1,7 @@
 __pycache__/
-pickled_data/20*
-archive/
+pickled_data/N=5/
+pickled_data/N=6/
+__archive__/
 
 *.aux
 *.lof

@@ -4,6 +4,7 @@ import glob
 import pickle
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib import colormaps as cm
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
@@ -11,11 +12,11 @@ import numpy as np
 
 plt.rcParams.update({"text.usetex": True,}) 
 plt.rcParams['text.latex.preamble'] = r'\usepackage[utf8]{inputenc}\usepackage[T1]{fontenc}\usepackage{lmodern}\inputencoding{utf8}\usepackage{amsmath}\usepackage{amssymb}\usepackage{dsfont}\usepackage{mathtools}\usepackage{physics}'
-mpl.rcParams['font.family'] = ['serif']
+mpl.rcParams['font.family'] = ['sans-serif']
 
-cmap = mpl.cm.get_cmap('viridis')
+cmap = cm['viridis']
 
-files = [file for file in glob.glob("pickled_data/N=6/dict_*")]
+files = [file for file in glob.glob("pickled_data/N=6/arr*")]
 files.sort()
 
 quantities = []
@@ -23,19 +24,31 @@ time_evo = []
 integrated = []
 discord = []
 alpha = []
-for ind, file in enumerate(files):
-    with open(file, 'rb') as f:
-        the_dict = pickle.load(f)
-        discord.append(the_dict['discord'])
-        alpha.append(the_dict['alpha'])
-        quantities.append(the_dict['quantities'])
-        time_evo.append(the_dict['time_evo'])
-        integrated.append(the_dict['integrated'])
 
-arr_time = [1e-3*quantities[ind]['local minima in rel ent'][0][0] for ind in range(len(files))]
-#print(discord, arr_time)
-fig, ax = plt.subplots(figsize=(12,5))
-ax.plot(discord, arr_time, '.')
-ax.set_xscale('log')
-#ax.plot(discord,alpha)
+with open(files[0], 'rb') as f:
+    the_dict = pickle.load(f)
+    discord = the_dict[1]
+    arr_time = the_dict[0]
+    #discord.append(the_dict['discord'])
+    #alpha.append(the_dict['alpha'])
+    #quantities.append(the_dict['quantities'])
+    #time_evo.append(the_dict['time_evo'])
+    #integrated.append(the_dict['integrated'])
+
+print(discord)
+#t = [i/1000 for i in range(int(np.pi*1000)+1)]
+fig, ax = plt.subplots(figsize=(14.5/2.54,6/2.54))
+ax.plot(discord, np.array(arr_time)*1e-3, color=cmap(.5), label =r'Arrival Time')
+#for ind, traj in enumerate(integrated[0]):
+#    ax.plot(t, traj[:3142], label=r'$\expval{\sigma^z_{'+str(ind+1)+r'}}$', color=cmap((ind+1)/7))
+#ax.set_xlim(-.05,np.pi+.05)
+
+ax.set_xlabel(r'$D(\alpha)$')
+ax.set_ylabel(r'Arrival time')
+#
+fig.tight_layout()
+#fig.subplots_adjust(right=.83)
+#fig.legend(loc='right')
+plt.savefig('Review-2023-03-22/arr_time_over_discord.pdf')
 plt.show()
+#
