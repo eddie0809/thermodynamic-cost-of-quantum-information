@@ -9,35 +9,39 @@ from scipy.signal import argrelmin
 
 from q_discord import quantum_discord
 
-"""
-There used to be two more functions.
 
-One returned a system with initial density matrix, where
-correlations could be at an arbitrary position. It can be found in a separate
-file named 'dumping_ground'.
+class HeisenbergXY:
+    """There used to be two more functions.
 
-The other one was a function which computed "long-range correlations",
-which turned out to not work due to the resulting density matrix no longer
-being positive. check previous versions for it if you must.
-"""
+    One returned a system with initial density matrix, where
+    correlations could be at an arbitrary position. It can be found in a separate
+    file named 'dumping_ground'.
 
-class HeisenbergXY: 
-    def __init__(self, t, N, alpha_reduced, beta: list) -> None: # , corr: list
+    The other one was a function which computed "long-range correlations",
+    which turned out to not work due to the resulting density matrix no longer
+    being positive. check previous versions for it if you must.
+    """
+    def __init__(self, t, N, alpha_reduced, beta: list, corr:str, x_state:Qobj = None) -> None: # , corr: list
         self.t = t                      # array of timesteps
         self.dt = self.t[1]             # length of timestep
         self.N = N                      # Number of qubits
         self.beta = beta                # list of temperatures of the correlated qubits
         self.alpha = alpha_reduced * self.get_max_alpha()
 
-        self.first_state  = (-beta[0]*sigmaz()).expm()/(2*np.cosh(beta[0]))
-        second_state = (-beta[1]*sigmaz()).expm()/(2*np.cosh(beta[1]))
-        
-        self.chi = self.alpha * tensor(sigmap(), sigmam()) - self.alpha * tensor(sigmam(), sigmap())
-        self.corr_state = tensor(self.first_state, second_state) + self.chi
-        
-        self.rho = self.init_system()
+        if corr=="therm":
+            self.first_state  = (-beta[0]*sigmaz()).expm()/(2*np.cosh(beta[0]))
+            second_state = (-beta[1]*sigmaz()).expm()/(2*np.cosh(beta[1]))
 
-        self.discord = quantum_discord(self.corr_state)
+            self.chi = self.alpha * tensor(sigmap(), sigmam()) - self.alpha * tensor(sigmam(), sigmap())
+            self.corr_state = tensor(self.first_state, second_state) + self.chi
+
+            self.rho = self.init_system()
+
+            self.discord = quantum_discord(self.corr_state)
+        elif corr == "X":
+            self.corr_state = x_state
+            self.rho = self.init_system()
+            #self.discord = quantum_discord(self.corr_state)
         
         self.calc_composite_ops()
         self.compute_xy_hamiltonian()
