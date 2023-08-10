@@ -1,6 +1,5 @@
 __pycache__/
-pickled_data/N=5/
-pickled_data/N=6/
+pickled_data/
 __archive__/
 
 *.aux
