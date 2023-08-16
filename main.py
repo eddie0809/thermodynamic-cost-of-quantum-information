@@ -1,12 +1,18 @@
+import pickle
 import numpy as np
-import xy_chain
 import time
 from qutip import *
+import matplotlib.pyplot as plt
+from matplotlib import colormaps as cm
+
+import xy_chain
+
+cmap = cm['viridis']
 
 t_stop = np.pi
 dt = 1e-3
 t = np.arange(0, t_stop, dt)
-beta = [0, 0]
+beta = [1e-3, .1]
 N = 5
 
 x_state = Qobj([
@@ -15,14 +21,55 @@ x_state = Qobj([
     [0, -1.j*.06, .2, 0],
     [-1.j*.04, 0, 0, .1]
 ])
-print(x_state)
+
 poss_alpha = [i/100 for i in range(101)]
 
 arr_times = []
 discord = []
-system = xy_chain.HeisenbergXY(t, N, 0, beta, corr='X', x_state=x_state)
-system.arrival_time()
-print(system.quantities)
+crit_rho = {}
+system = xy_chain.HeisenbergXY(t, N, 1, beta, corr='therm')
+system.integrate()
+system.i_dot_sq()
+# system.e_dot()
+# edot = system.quantities['e_dot']
+edot = np.pi * np.diff(system.integrated[-1])/(dt*3*np.log(2)**2)
+idot = system.quantities['i_dot_sq']
+
+fig, ((ax0, ax1), (ax2,ax3)) = plt.subplots(2,2,figsize=(24,13.5))
+
+for i in range(N):
+    print(i)
+    doft = system.n_qubit_discord_of_t([i,i+1])
+    inds = np.argmax(doft)
+    crit_rho[f'{i},{i+1}'] = system.time_evo[inds]
+    print(crit_rho[f'{i},{i+1}'], crit_rho[f'{i},{i+1}'].ptrace([i,i+1]))
+    print()
+    print(crit_rho[f'{i},{i+1}'].eigenenergies(), crit_rho[f'{i},{i+1}'].ptrace([i,i+1]).eigenenergies())
+    print()
+    ax0.plot(t, doft, color=cmap((i+1)/(N+1)), label=r'$D(\rho_{'+f'{i+1},{i+2}'+r'})$')
+    ax2.plot(t, system.integrated[i], color=cmap((i+1)/(N+2)))
+
+ax2.plot(t, system.integrated[-1], color=cmap(6/7))
+
+ax0.legend(loc='best')
+
+ddot = np.diff(doft)/dt
+
+ax1.plot(t[1:], edot*np.log(2)**2, ls=':', color = 'grey', label=r'no ln')
+ax1.plot(t[1:], edot*np.log(2)**2+ddot**2, color = cmap(1/3), label=r'no ln + $(\partial_t D)^2$')
+ax1.plot(t[1:], edot, color='grey', ls='-.', label=r'ln')
+ax1.plot(t[1:], idot, color = cmap(2/3))
+ax1.axhline(0, color='grey', ls='--')
+ax1.legend(loc='best')
+
+ax3.plot(t[1:], edot*np.log(2)**2-idot+ddot**2, color = cmap(1/2))
+ax3.axhline(0, color='grey', ls='--')
+fig.tight_layout()
+plt.savefig("take_peek07.pdf")
+plt.show()
+
+#with open("data.pickle", "wb") as f:
+#    pickle.dump(crit_rho, f)
 # for ind, reduced_alpha in enumerate(poss_alpha):
 #     time_list = [time.time(), time.time()]
 #     system = xy_chain.HeisenbergXY(t, N, reduced_alpha, beta)

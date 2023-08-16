@@ -29,7 +29,7 @@ class HeisenbergXY:
         self.beta = beta       # list of temperatures of the correlated qubits
         self.alpha = alpha_reduced * self.get_max_alpha()
 
-        if corr == "therm":
+        if corr == "therm" and alpha_reduced>0:
             self.first_state = (-beta[0]*sigmaz()).expm()/(2*np.cosh(beta[0]))
             second_state = (-beta[1]*sigmaz()).expm()/(2*np.cosh(beta[1]))
 
@@ -44,6 +44,11 @@ class HeisenbergXY:
             self.corr_state = x_state
             self.rho = self.init_system()
             # self.discord = quantum_discord(self.corr_state)
+        elif alpha_reduced == 0 and corr != "X":
+            self.first_state = (-beta[0]*sigmaz()).expm()/(2*np.cosh(beta[0]))
+            second_state = (-beta[1]*sigmaz()).expm()/(2*np.cosh(beta[1]))
+            self.corr_state = tensor(self.first_state, second_state)
+            self.rho = self.init_system()
 
         self.calc_composite_ops()
         self.compute_xy_hamiltonian()
@@ -93,6 +98,9 @@ class HeisenbergXY:
         for _ in range(1, self.N):
             rho_system = tensor(rho_system, Qobj([[0, 0], [0, 1]]))
         return rho_system
+
+    def n_qubit_discord_of_t(self, qubits: list):
+        return [quantum_discord(rho_t.ptrace(qubits)) for rho_t in self.time_evo]
 
     def single_state_fidelity(self):
         self.quantities["fidelity"] = np.array(
