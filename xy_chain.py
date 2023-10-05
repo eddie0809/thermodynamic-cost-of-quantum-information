@@ -27,15 +27,16 @@ class HeisenbergXY:
         self.dt = self.t[1]    # length of timestep
         self.N = N             # Number of qubits
         self.beta = beta       # list of temperatures of the correlated qubits
-        self.alpha = alpha_reduced * self.get_max_alpha()
+        self.alpha = 1. * alpha_reduced * self.get_max_alpha()
 
         if corr == "therm" and alpha_reduced>0:
             self.first_state = (-beta[0]*sigmaz()).expm()/(2*np.cosh(beta[0]))
             second_state = (-beta[1]*sigmaz()).expm()/(2*np.cosh(beta[1]))
+            self.uncorr = tensor(self.first_state, second_state)
 
             self.chi = self.alpha * tensor(
                  sigmap(), sigmam()) - self.alpha * tensor(sigmam(), sigmap())
-            self.corr_state = tensor(self.first_state, second_state)+self.chi
+            self.corr_state = self.uncorr+self.chi
 
             self.rho = self.init_system()
 

@@ -65,7 +65,7 @@ ax1.legend(loc='best')
 ax3.plot(t[1:], edot*np.log(2)**2-idot+ddot**2, color = cmap(1/2))
 ax3.axhline(0, color='grey', ls='--')
 fig.tight_layout()
-plt.savefig("take_peek07.pdf")
+plt.savefig("take_peek08.pdf")
 plt.show()
 
 #with open("data.pickle", "wb") as f:
