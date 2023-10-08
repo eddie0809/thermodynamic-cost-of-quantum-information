@@ -29,7 +29,7 @@ class HeisenbergXY:
         self.beta = beta       # list of temperatures of the correlated qubits
         self.alpha = 1. * alpha_reduced * self.get_max_alpha()
 
-        if corr == "therm" and alpha_reduced>0:
+        if corr == "therm" and alpha_reduced > 0:
             self.first_state = (-beta[0]*sigmaz()).expm()/(2*np.cosh(beta[0]))
             second_state = (-beta[1]*sigmaz()).expm()/(2*np.cosh(beta[1]))
             self.uncorr = tensor(self.first_state, second_state)
@@ -52,7 +52,7 @@ class HeisenbergXY:
             self.rho = self.init_system()
 
         self.calc_composite_ops()
-        self.compute_xy_hamiltonian()
+        self.compute_xy_hamiltonian(lamb=None)
 
         self.time_evo = mesolve(self.H, self.rho, self.t, [], []).states
         self.quantities = {}
@@ -83,6 +83,8 @@ class HeisenbergXY:
             self.sm_list.append(tensor(op_list))
 
     def compute_xy_hamiltonian(self,  lamb=1., coupling=1/2):
+        if lamb is None:
+            lamb = 2/np.sqrt(self.N)
         hamiltonian = 0
         for i in range(self.N):
             hamiltonian += (coupling*lamb) / 2 * np.sqrt((i+1)*(self.N-i)) * (
@@ -101,7 +103,8 @@ class HeisenbergXY:
         return rho_system
 
     def n_qubit_discord_of_t(self, qubits: list):
-        return [quantum_discord(rho_t.ptrace(qubits)) for rho_t in self.time_evo]
+        return [quantum_discord(rho_t.ptrace(qubits)) for rho_t in
+                self.time_evo]
 
     def single_state_fidelity(self):
         self.quantities["fidelity"] = np.array(
@@ -133,6 +136,24 @@ class HeisenbergXY:
         self.quantities["e_dot"] = [
               -1.j*(commutator(self.H, evolved).ptrace(self.N)*sigmaz()).tr()
               for evolved in self.time_evo]
+
+    def e_dot_test(self, k=None):
+        # explainer: in lie algebras we have tr(x * [y,z]) = tr([x,y] * z)
+        # further, the von Neumann equation for the time derivative of rho
+        # reads d/dt rho = -i [H, rho], i.e.
+        # d/dt <x> = d/dt tr(x * rho) = -i * tr(x * [H, rho])
+        # = - Im{tr([x,H] * rho)}
+        # by somehow losing the - in the process, we can save on computational
+        # cost by calculating the commutator once and skip painstakingly
+        # computing the partial trace _and_ the commutator at each timestep
+        # and instead compute one commutator and then only multiply matrices
+        # and trace it.
+        if k is None:
+            k=self.N
+        this_chi = commutator(self.sz_list[k], self.H)
+        e_dot_of_t_test = np.imag([(this_chi*evolved).tr() for evolved in
+                           self.time_evo])
+        self.quantities["e_dot_test"] = e_dot_of_t_test
 
     def integrate(self, solver="me"):
         # evolve and calculate expectation values

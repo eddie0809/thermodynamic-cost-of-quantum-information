@@ -9,12 +9,13 @@ import xy_chain
 
 cmap = cm['viridis']
 
-t_stop = np.pi
+beta = [1e-3, .01]
+N = 7
+t_stop = np.pi*np.sqrt(N)/2
 dt = 1e-3
 t = np.arange(0, t_stop, dt)
-beta = [1e-3, .1]
-N = 5
-
+testing = time.time()
+print(time.time()-testing)
 x_state = Qobj([
     [.4, 0, 0, 1.j*.04],
     [0, .3, 1.j*.06, 0],
@@ -28,13 +29,29 @@ arr_times = []
 discord = []
 crit_rho = {}
 system = xy_chain.HeisenbergXY(t, N, 1, beta, corr='therm')
-system.integrate()
+print(f"system: {time.time()-testing}")
+# system.integrate()
+# print(f"integrate {time.time()-testing}")
 system.i_dot_sq()
-# system.e_dot()
-# edot = system.quantities['e_dot']
-edot = np.pi * np.diff(system.integrated[-1])/(dt*3*np.log(2)**2)
+print(f"inf_sq {time.time()-testing}")
+system.e_dot_test()
+print(f"edot_test {time.time()-testing}")
+system.single_state_rel_ent()
+print(f"rel_ent {time.time()-testing}")
+rel_ent = system.quantities['rel_ent']
+edot = (system.quantities['e_dot_test'])*np.pi/3
+# edot_2 = np.diff(system.integrated[-1])/dt
 idot = system.quantities['i_dot_sq']
 
+plt.plot(edot)
+plt.plot(idot)
+plt.plot(edot[:-1]-idot)
+plt.show()
+plt.plot(rel_ent)
+plt.yscale('log')
+# plt.xscale('log')
+plt.show()
+"""
 fig, ((ax0, ax1), (ax2,ax3)) = plt.subplots(2,2,figsize=(24,13.5))
 
 for i in range(N):
@@ -87,3 +104,5 @@ plt.show()
 # [arr_times, discord],
 # "pickled_data/N="+str(N+1)+"/arr_time_for_reduced_alpha"
 # )
+"""
+
