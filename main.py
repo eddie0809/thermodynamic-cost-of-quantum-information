@@ -1,16 +1,38 @@
 import pickle
 import numpy as np
+import datetime
 import time
 from qutip import *
+import matplotlib as mpl
+mpl.use('pgf')
 import matplotlib.pyplot as plt
 from matplotlib import colormaps as cm
 
 import xy_chain
 
-cmap = cm['viridis']
+# plt.rcParams['text.usetex'] = True  # to use LaTeX in figures
+# plt.rcParams["text.tex.preamble"] = r"""\usepackage{fontspec}
+# \setmainfont{Latin Modern Roman}
+# \usepackage{amsmath} \usepackage{amssymb} \usepackage{dsfont}
+# \usepackage{mathtools} \usepackage{physics} \usepackage{siunitx}"""
+# plt.rcParams['font.family'] = ['serif']
+# plt.rcParams['pgf.texsystem'] = 'lualatex'
+plt.rcParams.update({
+    "pgf.texsystem": "lualatex",
+    "pgf.preamble": "\n".join([
+         r"\usepackage{fontspec}",
+         r"\setmainfont{Latin Modern Roman}",
+         r"\usepackage{amsmath}",
+         r"\usepackage{amssymb}",
+         r"\usepackage{physics}"
+    ]),
+})
 
-beta = [1e-3, .01]
-N = 4
+
+cmap = cm['magma']
+
+beta = [1e-3, 1e-3]
+N = 5
 _lambda = 2*np.sqrt(N)/N
 t_stop = np.pi/_lambda
 dt = 1e-3
@@ -31,26 +53,33 @@ discord = []
 crit_rho = {}
 system = xy_chain.HeisenbergXY(t, N, 0, beta, corr='therm', lamb=_lambda)
 print(f"system: {time.time()-testing}")
-# system.integrate()
-# print(f"integrate {time.time()-testing}")
-system.i_dot_sq()
-print(f"inf_sq {time.time()-testing}")
-system.e_dot_test()
-print(f"edot_test {time.time()-testing}")
-system.single_state_rel_ent()
-print(f"rel_ent {time.time()-testing}")
-rel_ent = system.quantities['rel_ent']
-edot = (system.quantities['e_dot_test'])*np.pi/3
+system.integrate()
+print(f"integrate {time.time()-testing}")
+# system.i_dot_sq()
+# print(f"inf_sq {time.time()-testing}")
+# system.e_dot_test()
+# print(f"edot_test {time.time()-testing}")
+# system.single_state_rel_ent()
+# print(f"rel_ent {time.time()-testing}")
+# rel_ent = system.quantities['rel_ent']
+# edot = (system.quantities['e_dot_test'])*np.pi/3
 # edot_2 = np.diff(system.integrated[-1])/dt
-idot = system.quantities['i_dot_sq']
+# idot = system.quantities['i_dot_sq']
 
-plt.plot(edot)
-plt.plot(idot)
-plt.plot(edot[:-1]-idot)
-plt.show()
-plt.plot(rel_ent)
-plt.yscale('log')
-# plt.xscale('log')
+fig, ax = plt.subplots(figsize=(16, 9))
+
+for i in range(N):
+    ax.plot(t, system.integrated[i], color=cmap((i+1)/(N+2)),
+            label=rf'$\expval{\sigma^z_{{{repr(i+1)}}}}$')
+ax.plot(t, system.integrated[-1], color=cmap(6/7))
+
+ax.legend(loc='best')
+fig.tight_layout()
+
+# import tikzplotlib
+
+# tikzplotlib.save("test.tex")
+plt.savefig('figure.pdf', backend='pgf')
 plt.show()
 """
 fig, ((ax0, ax1), (ax2,ax3)) = plt.subplots(2,2,figsize=(24,13.5))
@@ -106,4 +135,5 @@ plt.show()
 # "pickled_data/N="+str(N+1)+"/arr_time_for_reduced_alpha"
 # )
 """
+
 
