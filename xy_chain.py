@@ -22,7 +22,7 @@ class HeisenbergXY:
     being positive. check previous versions for it if you must.
     """
     def __init__(self, t, N, alpha_reduced,
-                 beta: list, corr: str, x_state: Qobj = None) -> None:
+                 beta: list, corr: str, x_state: Qobj = None, lamb = None) -> None:
         self.t = t             # array of timesteps
         self.dt = self.t[1]    # length of timestep
         self.N = N             # Number of qubits
@@ -52,7 +52,7 @@ class HeisenbergXY:
             self.rho = self.init_system()
 
         self.calc_composite_ops()
-        self.compute_xy_hamiltonian(lamb=None)
+        self.compute_xy_hamiltonian(lamb)
 
         self.time_evo = mesolve(self.H, self.rho, self.t, [], []).states
         self.quantities = {}
@@ -83,8 +83,6 @@ class HeisenbergXY:
             self.sm_list.append(tensor(op_list))
 
     def compute_xy_hamiltonian(self,  lamb=1., coupling=1/2):
-        if lamb is None:
-            lamb = 2/np.sqrt(self.N)
         hamiltonian = 0
         for i in range(self.N):
             hamiltonian += (coupling*lamb) / 2 * np.sqrt((i+1)*(self.N-i)) * (

@@ -10,8 +10,9 @@ import xy_chain
 cmap = cm['viridis']
 
 beta = [1e-3, .01]
-N = 7
-t_stop = np.pi*np.sqrt(N)/2
+N = 4
+_lambda = 2*np.sqrt(N)/N
+t_stop = np.pi/_lambda
 dt = 1e-3
 t = np.arange(0, t_stop, dt)
 testing = time.time()
@@ -28,7 +29,7 @@ poss_alpha = [i/100 for i in range(101)]
 arr_times = []
 discord = []
 crit_rho = {}
-system = xy_chain.HeisenbergXY(t, N, 1, beta, corr='therm')
+system = xy_chain.HeisenbergXY(t, N, 0, beta, corr='therm', lamb=_lambda)
 print(f"system: {time.time()-testing}")
 # system.integrate()
 # print(f"integrate {time.time()-testing}")
