@@ -48,16 +48,14 @@ poss_alpha = [(i/100)**2 for i in range(101)]
 
 arr_times = []
 discord = []
+inf_max = []
 crit_rho = {}
 for alph in poss_alpha:
     system = xy_chain.HeisenbergXY(t, N, alph, beta, corr='therm', lamb=_lambda)
     print(f"system: {time.time()-testing}")
-    system.arrival_time()
-    print(f"arrival time: {time.time()-testing}")
-    ind_arr = np.min(system.quantities["local minima in rel ent"])
-    the_arr_time = t[ind_arr]*_lambda/np.pi
-    print(the_arr_time)
-    arr_times.append(the_arr_time)
+    system.i_dot_sq()
+    print(f"inf_sq: {time.time()-testing}")
+    inf_max.append(system.quantities["i_dot_sq_max"])
 # system2 = xy_chain.HeisenbergXY(t, N, 1, beta, corr='therm', lamb=_lambda)
 # print(f"system: {time.time()-testing}")
 # system.integrate()
@@ -77,11 +75,12 @@ for alph in poss_alpha:
 # idot = system.quantities['i_dot_sq']
 
 fig, ax = plt.subplots(figsize=(8/2.54, 9/5.08))
-ax.plot(poss_alpha, arr_times, color = cmap(.5))
+cmap = cm['viridis']
+ax.plot(poss_alpha, inf_max, color = cmap(.5))
 fig.tight_layout()
 fig.subplots_adjust(left=.2, bottom=.24)
 ax.set_xlabel(r'$\alpha/\alpha_\mathrm{max}$')
-ax.set_ylabel(r'Reduced Arrival Time')
+ax.set_ylabel(r'Maximum Information flow')
 plt.savefig('arrival_times.pdf', backend='pgf')
 
 """
