@@ -118,7 +118,7 @@ class HeisenbergXY:
         self.single_rel_ent = self.quantities["rel_ent"]
 
     def arrival_time(self):
-        self.single_state_fidelity()
+        # self.single_state_fidelity()
         self.single_state_rel_ent()
         self.poss_t = argrelmin(self.single_rel_ent)
         self.quantities["local minima in rel ent"] = self.poss_t
@@ -136,7 +136,7 @@ class HeisenbergXY:
               for evolved in self.time_evo]
 
     def e_dot_test(self, k=None):
-        # explainer: in lie algebras we have tr(x * [y,z]) = tr([x,y] * z)
+        # explainer: in Lie algebras we have tr(x * [y,z]) = tr([x,y] * z)
         # further, the von Neumann equation for the time derivative of rho
         # reads d/dt rho = -i [H, rho], i.e.
         # d/dt <x> = d/dt tr(x * rho) = -i * tr(x * [H, rho])
@@ -146,7 +146,7 @@ class HeisenbergXY:
         # computing the partial trace _and_ the commutator at each timestep
         # and instead compute one commutator and then only multiply matrices
         # and trace it.
-        if k is None:
+        if k is None: # this makes sure that edot of N is computed by default
             k=self.N
         this_chi = commutator(self.sz_list[k], self.H)
         e_dot_of_t_test = np.imag([(this_chi*evolved).tr() for evolved in
